@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,8 +25,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
-import dmitry.molchanov.tictactoe.presentation.game.getWinner
+import dmitry.molchanov.tictactoe.presentation.game.getWinnerCells
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.BOTTOM
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.CENTER
@@ -40,6 +43,7 @@ import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.CROSS
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.ZERO
 import dmitry.molchanov.tictactoe.presentation.theme.TicTacToeTheme
+import kotlin.math.abs
 
 private const val CELL_WEIGHT = 0.3F
 
@@ -47,19 +51,27 @@ private const val CELL_WEIGHT = 0.3F
 fun GameScreen() {
     TicTacToeTheme {
         val gameSnap = remember { SnapshotStateMap<CellType, PlayerType>() }
-        var isGameOver by remember { mutableStateOf(false) }
-        var currentPlayer by remember { mutableStateOf(CROSS) }
-        fun changePlayer() {
-            currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
+        val positioningState = remember {
+            mutableStateOf(HashMap<CellType, Offset>())
         }
+        var currentPlayer by remember { mutableStateOf(CROSS) }
+        var winnerWithCells by remember { mutableStateOf<Pair<PlayerType, List<CellType>>?>(null) }
 
         fun onCellClick(cellType: CellType) {
-            if (isGameOver) return
+            if (winnerWithCells != null) return
             gameSnap[cellType] = currentPlayer
-            getWinner(gameSnap)?.let { winner ->
-                isGameOver = true
+            getWinnerCells(gameSnap)?.let { winner ->
+                winnerWithCells = winner
             }
-            changePlayer()
+            currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
+        }
+        winnerWithCells?.let {
+            val firstCell = it.second.first()
+            val lastCell = it.second.last()
+            DrawGameOverLine(
+                startOffset = positioningState.value[firstCell]!!,
+                endOffset = positioningState.value[lastCell]!!
+            )
         }
         Column(
             modifier = Modifier
@@ -71,39 +83,76 @@ fun GameScreen() {
                     .fillMaxWidth()
                     .weight(CELL_WEIGHT)
             ) {
-                GameCell(gameSnap[LEFT_TOP]) { onCellClick(LEFT_TOP) }
-                GameCell(gameSnap[TOP]) { onCellClick(TOP) }
-                GameCell(gameSnap[RIGHT_TOP]) { onCellClick(RIGHT_TOP) }
+                GameCell(LEFT_TOP, gameSnap[LEFT_TOP], positioningState, ::onCellClick)
+                GameCell(TOP, gameSnap[TOP], positioningState, ::onCellClick)
+                GameCell(RIGHT_TOP, gameSnap[RIGHT_TOP], positioningState, ::onCellClick)
             }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(CELL_WEIGHT)
             ) {
-                GameCell(gameSnap[LEFT_CENTER]) { onCellClick(LEFT_CENTER) }
-                GameCell(gameSnap[CENTER]) { onCellClick(CENTER) }
-                GameCell(gameSnap[RIGHT_CENTER]) { onCellClick(RIGHT_CENTER) }
+                GameCell(LEFT_CENTER, gameSnap[LEFT_CENTER], positioningState, ::onCellClick)
+                GameCell(CENTER, gameSnap[CENTER], positioningState, ::onCellClick)
+                GameCell(RIGHT_CENTER, gameSnap[RIGHT_CENTER], positioningState, ::onCellClick)
             }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(CELL_WEIGHT)
             ) {
-                GameCell(gameSnap[LEFT_BOTTOM]) { onCellClick(LEFT_BOTTOM) }
-                GameCell(gameSnap[BOTTOM]) { onCellClick(BOTTOM) }
-                GameCell(gameSnap[RIGHT_BOTTOM]) { onCellClick(RIGHT_BOTTOM) }
+                GameCell(LEFT_BOTTOM, gameSnap[LEFT_BOTTOM], positioningState, ::onCellClick)
+                GameCell(BOTTOM, gameSnap[BOTTOM], positioningState, ::onCellClick)
+                GameCell(RIGHT_BOTTOM, gameSnap[RIGHT_BOTTOM], positioningState, ::onCellClick)
             }
         }
     }
 }
 
 @Composable
-private fun RowScope.GameCell(playerType: PlayerType?, onClick: () -> Unit) {
+private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset) {
+    val animVal = remember { Animatable(0f) }
+    val xDifference = remember { abs(startOffset.x - endOffset.x).toInt() }
+    val yDifference = remember { abs(startOffset.y - endOffset.y).toInt() }
+    LaunchedEffect(animVal) {
+        animVal.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+        )
+    }
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawLine(
+            color = Color.Blue,
+            start = startOffset,
+            end = Offset(
+                x = startOffset.x + animVal.value * xDifference,
+                y = startOffset.y + yDifference * animVal.value
+            ),
+            strokeWidth = 10f
+        )
+    }
+}
+
+@Composable
+private fun RowScope.GameCell(
+    cellType: CellType,
+    playerType: PlayerType?,
+    positioningState: State<HashMap<CellType, Offset>>,
+    onClick: (CellType) -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .weight(CELL_WEIGHT)
-            .clickable { onClick() }
+            .clickable { onClick(cellType) }
+            .onGloballyPositioned {
+                val size = it.size
+                val position = it.positionInRoot()
+                positioningState.value[cellType] = Offset(
+                    x = position.x + size.width / 2,
+                    y = position.y + size.height / 2
+                )
+            }
     ) {
         when (playerType) {
             CROSS -> DrawCross()
