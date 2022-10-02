@@ -15,36 +15,31 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
-import dmitry.molchanov.tictactoe.presentation.game.model.Cell
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType
-import dmitry.molchanov.tictactoe.presentation.game.model.ClickedStatus
-import dmitry.molchanov.tictactoe.presentation.game.model.GameState
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.BOTTOM
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.CENTER
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.LEFT_BOTTOM
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.LEFT_CENTER
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.LEFT_TOP
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.RIGHT_BOTTOM
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.RIGHT_CENTER
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.RIGHT_TOP
+import dmitry.molchanov.tictactoe.presentation.game.model.CellType.TOP
+import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.CROSS
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.ZERO
 import dmitry.molchanov.tictactoe.presentation.theme.TicTacToeTheme
-
-private val defaultGameState = GameState(
-    cells = SnapshotStateList<Cell>().apply {
-        add(Cell(cellType = CellType.LEFT_TOP, playerType = null))
-        add(Cell(cellType = CellType.TOP, playerType = null))
-        add(Cell(cellType = CellType.RIGHT_TOP, playerType = null))
-        add(Cell(cellType = CellType.LEFT_CENTER, playerType = null))
-        add(Cell(cellType = CellType.CENTER, playerType = null))
-        add(Cell(cellType = CellType.RIGHT_CENTER, playerType = null))
-        add(Cell(cellType = CellType.LEFT_BOTTOM, playerType = null))
-        add(Cell(cellType = CellType.BOTTOM, playerType = null))
-        add(Cell(cellType = CellType.RIGHT_BOTTOM, playerType = null))
-    }
-)
 
 private const val CELL_WEIGHT = 0.3F
 
@@ -57,29 +52,16 @@ fun GameScreen(/*vm: GameViewModel = viewModel()*/) {
          * see d.android.com/wear/compose.
          */
         //val gameState = vm.gameState.collectAsState().value
-        val gameState = remember { mutableStateOf(defaultGameState) }
-        var currentPlayer = remember { CROSS }
+        val gameSnap = remember { SnapshotStateMap<CellType, PlayerType>() }
+        var currentPlayer by remember { mutableStateOf(CROSS) }
         println("1488 currentPlayer = $currentPlayer")
         fun changePlayer() {
             currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
         }
 
-        fun onCellClick(cell: Cell) {
-            println("1488 onCellClick = $cell")
-            //vm.onEvent(OnCellClick(cellType = cell.cellType, playerType = currentPlayer))
-            val oldCell = gameState.value.cells.find { it == cell }
-            val newCell = oldCell
-                ?.copy(
-                    playerType = currentPlayer, clickedStatus = when (cell.clickedStatus) {
-                        ClickedStatus.CLICKABLE -> ClickedStatus.DRAW
-                        ClickedStatus.DRAW -> ClickedStatus.ALREADY_CLICKED
-                        ClickedStatus.ALREADY_CLICKED -> ClickedStatus.ALREADY_CLICKED
-                    }
-                )
-                ?: error("Cell not found")
-            gameState.value.cells.remove(oldCell)
-            gameState.value.cells.add(newCell)
-            //gameState.value = GameState(gameState.value.cells)
+        fun onCellClick(cellType: CellType) {
+            println("1488 SET currentPlayer = $currentPlayer")
+            gameSnap[cellType] = currentPlayer
             changePlayer()
         }
         Column(
@@ -92,36 +74,36 @@ fun GameScreen(/*vm: GameViewModel = viewModel()*/) {
                     .fillMaxWidth()
                     .weight(CELL_WEIGHT)
             ) {
-                GameCell(gameState.value.getCell(CellType.LEFT_TOP), ::onCellClick)
-                GameCell(gameState.value.getCell(CellType.TOP), ::onCellClick)
-                GameCell(gameState.value.getCell(CellType.RIGHT_TOP), ::onCellClick)
+                GameCell(gameSnap[LEFT_TOP]) { onCellClick(LEFT_TOP) }
+                GameCell(gameSnap[TOP]) { onCellClick(TOP) }
+                GameCell(gameSnap[RIGHT_TOP]) { onCellClick(RIGHT_TOP) }
             }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(CELL_WEIGHT)
             ) {
-                GameCell(gameState.value.getCell(CellType.LEFT_CENTER), ::onCellClick)
-                GameCell(gameState.value.getCell(CellType.CENTER), ::onCellClick)
-                GameCell(gameState.value.getCell(CellType.RIGHT_CENTER), ::onCellClick)
+                GameCell(gameSnap[LEFT_CENTER]) { onCellClick(LEFT_CENTER) }
+                GameCell(gameSnap[CENTER]) { onCellClick(CENTER) }
+                GameCell(gameSnap[RIGHT_CENTER]) { onCellClick(RIGHT_CENTER) }
             }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(CELL_WEIGHT)
             ) {
-                GameCell(gameState.value.getCell(CellType.LEFT_BOTTOM), ::onCellClick)
-                GameCell(gameState.value.getCell(CellType.BOTTOM), ::onCellClick)
-                GameCell(gameState.value.getCell(CellType.RIGHT_BOTTOM), ::onCellClick)
+                GameCell(gameSnap[LEFT_BOTTOM]) { onCellClick(LEFT_BOTTOM) }
+                GameCell(gameSnap[BOTTOM]) { onCellClick(BOTTOM) }
+                GameCell(gameSnap[RIGHT_BOTTOM]) { onCellClick(RIGHT_BOTTOM) }
             }
         }
     }
 }
 
 @Composable
-private fun RowScope.GameCell(cell: Cell, onClick: (Cell) -> Unit) {
-    println("1488 cell = $cell")
-    val color = when (cell.playerType) {
+private fun RowScope.GameCell(playerType: PlayerType?, onClick: () -> Unit) {
+    println("1488 playerType = $playerType")
+    val color = when (playerType) {
         CROSS -> Color(0xffffeb46)
         ZERO -> Color(0xff91a4fc)
         null -> Color(0xffffff)
@@ -131,35 +113,66 @@ private fun RowScope.GameCell(cell: Cell, onClick: (Cell) -> Unit) {
             .fillMaxSize()
             .weight(CELL_WEIGHT)
             .background(color)
-            .clickable { onClick(cell) }
+            .clickable { onClick() }
     ) {
-        if(cell.clickedStatus == ClickedStatus.DRAW){
-            val radius = 40f
-            val animateFloat = remember { Animatable(0f) }
-            LaunchedEffect(animateFloat) {
-                animateFloat.animateTo(
-                    targetValue = 7f,
-                    animationSpec = tween(durationMillis = 3000, easing = LinearEasing))
-            }
-            Canvas(modifier = Modifier.fillMaxSize()){
-                drawArc(
-                    color = Color.Black,
-                    startAngle = 0f,
-                    sweepAngle = 360f * animateFloat.value,
-                    useCenter = false,
-                    topLeft = Offset(size.width / 4, size.height / 4),
-                    size = Size(radius * 2 ,
-                        radius * 2),
-                    style = Stroke(10.0f)
-                )
-            }
+        when (playerType) {
+            CROSS -> DrawCross()
+            ZERO -> DrawCircle()
+            null -> Unit
         }
     }
 }
 
-private fun GameState.getCell(cellType: CellType): Cell {
-    return this.cells.firstOrNull {
-        it.cellType == cellType
-    } ?: error("Cell not found")
+@Composable
+private fun DrawCircle() {
+    val radius = 45f
+    val animateFloat = remember { Animatable(0f) }
+    LaunchedEffect(animateFloat) {
+        animateFloat.animateTo(
+            targetValue = 7f,
+            animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
+        )
+    }
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawArc(
+            color = Color.Black,
+            startAngle = 0f,
+            sweepAngle = 360f * animateFloat.value,
+            useCenter = false,
+            topLeft = Offset(size.width / 6, size.height / 6),
+            size = Size(radius * 2, radius * 2),
+            style = Stroke(10.0f)
+        )
+    }
+}
+
+@Composable
+private fun DrawCross() {
+    val animVal = remember { Animatable(0f) }
+    val animVal2 = remember { Animatable(0f) }
+    LaunchedEffect(animVal) {
+        animVal.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+        )
+        animVal2.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+        )
+    }
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawLine(
+            color = Color.Black,
+            start = Offset(0f, 0f),
+            end = Offset(animVal.value * size.width, animVal.value * size.height),
+            strokeWidth = 10f
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(size.width, 0f),
+            end = Offset(size.width - (animVal2.value * size.width), animVal2.value * size.height),
+            strokeWidth = 10f
+        )
+    }
 }
 

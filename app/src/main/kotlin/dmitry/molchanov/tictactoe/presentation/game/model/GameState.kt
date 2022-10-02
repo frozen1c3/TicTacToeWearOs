@@ -1,8 +1,8 @@
 package dmitry.molchanov.tictactoe.presentation.game.model
 
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 
 data class GameState(
-    val cells: SnapshotStateList<Cell>
+    val cells: SnapshotStateMap<CellType, PlayerType>
 )
 
