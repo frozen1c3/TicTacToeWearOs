@@ -43,17 +43,15 @@ import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.CROSS
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.ZERO
 import dmitry.molchanov.tictactoe.presentation.theme.TicTacToeTheme
-import kotlin.math.abs
 
 private const val CELL_WEIGHT = 0.3F
 
 @Composable
 fun GameScreen() {
     TicTacToeTheme {
+        //TODO optimize recompose
         val gameSnap = remember { SnapshotStateMap<CellType, PlayerType>() }
-        val positioningState = remember {
-            mutableStateOf(HashMap<CellType, Offset>())
-        }
+        val positioningState = remember { mutableStateOf(HashMap<CellType, Offset>()) }
         var currentPlayer by remember { mutableStateOf(CROSS) }
         var winnerWithCells by remember { mutableStateOf<Pair<PlayerType, List<CellType>>?>(null) }
 
@@ -70,14 +68,6 @@ fun GameScreen() {
                 winnerWithCells = winner
             }
             currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
-        }
-        winnerWithCells?.let {
-            val firstCell = it.second.first()
-            val lastCell = it.second.last()
-            DrawGameOverLine(
-                startOffset = positioningState.value[firstCell]!!,
-                endOffset = positioningState.value[lastCell]!!
-            )
         }
         Column(
             modifier = Modifier
@@ -112,19 +102,30 @@ fun GameScreen() {
                 GameCell(RIGHT_BOTTOM, gameSnap[RIGHT_BOTTOM], positioningState, ::onCellClick)
             }
         }
+        winnerWithCells?.let {
+            val firstCell = it.second.first()
+            val lastCell = it.second.last()
+            DrawGameOverLine(
+                startOffset = positioningState.value[firstCell]!!,
+                endOffset = positioningState.value[lastCell]!! // TODO
+            )
+        }
     }
 }
 
 @Composable
 private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset) {
     val animVal = remember { Animatable(0f) }
-    val xDifference = remember { abs(startOffset.x - endOffset.x).toInt() }
-    val yDifference = remember { abs(startOffset.y - endOffset.y).toInt() }
+    val xDifference = remember {
+        if (startOffset.x < endOffset.x) endOffset.x - startOffset.x
+        else (startOffset.x - endOffset.x) * -1
+    }
+    val yDifference = remember {
+        if (startOffset.y < endOffset.y) endOffset.y - startOffset.y
+        else (startOffset.y - endOffset.y) * -1
+    }
     LaunchedEffect(animVal) {
-        animVal.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
-        )
+        animVal.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawLine(
@@ -173,10 +174,7 @@ private fun DrawCircle() {
     val radius = 45f
     val animateFloat = remember { Animatable(0f) }
     LaunchedEffect(animateFloat) {
-        animateFloat.animateTo(
-            targetValue = 7f,
-            animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
-        )
+        animateFloat.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawArc(
@@ -196,14 +194,8 @@ private fun DrawCross() {
     val animVal = remember { Animatable(0f) }
     val animVal2 = remember { Animatable(0f) }
     LaunchedEffect(animVal) {
-        animVal.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 300, easing = LinearEasing)
-        )
-        animVal2.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 300, easing = LinearEasing)
-        )
+        animVal.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
+        animVal2.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
     Canvas(
         modifier = Modifier
