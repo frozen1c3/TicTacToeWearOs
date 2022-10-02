@@ -25,6 +25,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import dmitry.molchanov.tictactoe.presentation.game.getWinner
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.BOTTOM
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.CENTER
@@ -43,22 +44,21 @@ import dmitry.molchanov.tictactoe.presentation.theme.TicTacToeTheme
 private const val CELL_WEIGHT = 0.3F
 
 @Composable
-/*@Preview*/
-fun GameScreen(/*vm: GameViewModel = viewModel()*/) {
+fun GameScreen() {
     TicTacToeTheme {
-        /* If you have enough items in your list, use [ScalingLazyColumn] which is an optimized
-         * version of LazyColumn for wear devices with some added features. For more information,
-         * see d.android.com/wear/compose.
-         */
-        //val gameState = vm.gameState.collectAsState().value
         val gameSnap = remember { SnapshotStateMap<CellType, PlayerType>() }
+        var isGameOver by remember { mutableStateOf(false) }
         var currentPlayer by remember { mutableStateOf(CROSS) }
         fun changePlayer() {
             currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
         }
 
         fun onCellClick(cellType: CellType) {
+            if (isGameOver) return
             gameSnap[cellType] = currentPlayer
+            getWinner(gameSnap)?.let { winner ->
+                isGameOver = true
+            }
             changePlayer()
         }
         Column(
@@ -150,7 +150,11 @@ private fun DrawCross() {
             animationSpec = tween(durationMillis = 300, easing = LinearEasing)
         )
     }
-    Canvas(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
         drawLine(
             color = Color.Green,
             start = Offset(0f, 0f),
