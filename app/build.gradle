@@ -16,14 +16,31 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-
+        resConfigs "en"
     }
-
+    signingConfigs {
+        release {
+            storeFile file('../key_store.jks')
+            storePassword 'key1212'
+            keyAlias = 'key'
+            keyPassword 'key1212'
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            signingConfig signingConfigs.findByName("release")
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        freeCompilerArgs += [
+                '-Xno-call-assertions',
+                '-Xno-receiver-assertions',
+                '-Xno-param-assertions'
+        ]
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
