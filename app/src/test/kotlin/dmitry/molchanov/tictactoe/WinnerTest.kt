@@ -1,6 +1,6 @@
 package dmitry.molchanov.tictactoe
 
-import dmitry.molchanov.tictactoe.presentation.game.getWinner
+import dmitry.molchanov.tictactoe.presentation.game.getWinnerCells
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.BOTTOM
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.CENTER
@@ -68,15 +68,15 @@ class WinnerTest {
     private fun checkNoWinner(vararg cellTypes: CellType) {
         listOf(PlayerType.ZERO, PlayerType.CROSS).forEach { player ->
             val gameSnap = getSnap(player, *cellTypes)
-            val winner = getWinner(gameSnap)
+            val winner = getWinnerCells(gameSnap)
             assertNull(winner)
         }
     }
     private fun checkLine(vararg cellTypes: CellType) {
         listOf(PlayerType.ZERO, PlayerType.CROSS).forEach { player ->
             val gameSnap = getSnap(player, *cellTypes)
-            val winner = getWinner(gameSnap)
-            assertEquals(player, winner)
+            val winner = getWinnerCells(gameSnap)
+            assertEquals(player, winner!!.first)
         }
     }
 

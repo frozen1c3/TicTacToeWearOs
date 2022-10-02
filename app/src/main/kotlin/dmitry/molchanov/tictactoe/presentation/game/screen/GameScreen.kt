@@ -106,8 +106,8 @@ fun GameScreen() {
             val firstCell = it.second.first()
             val lastCell = it.second.last()
             DrawGameOverLine(
-                startOffset = positioningState.value[firstCell]!!,
-                endOffset = positioningState.value[lastCell]!! // TODO
+                startOffset = positioningState.value[firstCell] ?: error("Start offset is null"),
+                endOffset = positioningState.value[lastCell] ?: error("End offset is null")
             )
         }
     }
