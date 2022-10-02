@@ -58,8 +58,14 @@ fun GameScreen() {
         var winnerWithCells by remember { mutableStateOf<Pair<PlayerType, List<CellType>>?>(null) }
 
         fun onCellClick(cellType: CellType) {
-            if (winnerWithCells != null) return
-            gameSnap[cellType] = currentPlayer
+            if (winnerWithCells != null || gameSnap.size == 9) {
+                winnerWithCells = null
+                gameSnap.clear()
+                return
+            }
+            if (gameSnap[cellType] == null) {
+                gameSnap[cellType] = currentPlayer
+            }
             getWinnerCells(gameSnap)?.let { winner ->
                 winnerWithCells = winner
             }
@@ -128,7 +134,7 @@ private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset) {
                 x = startOffset.x + animVal.value * xDifference,
                 y = startOffset.y + yDifference * animVal.value
             ),
-            strokeWidth = 10f
+            strokeWidth = 20f
         )
     }
 }
