@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -69,10 +70,41 @@ fun GameScreen() {
             }
             currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
         }
+
+        val borderAnim = remember { Animatable(0f) }
+        LaunchedEffect(borderAnim) {
+            borderAnim.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
+                .drawBehind {
+                    drawLine(
+                        Color.Yellow,
+                        Offset(0f, size.height / 3),
+                        Offset(size.width * borderAnim.value, size.height / 3),
+                        10f
+                    )
+                    drawLine(
+                        Color.Yellow,
+                        Offset(0f, size.height / 1.5f),
+                        Offset(size.width * borderAnim.value, size.height / 1.5f),
+                        10f
+                    )
+                    drawLine(
+                        Color.Yellow,
+                        Offset(size.width / 3, 0f),
+                        Offset(size.width / 3, size.height * borderAnim.value),
+                        10f
+                    )
+                    drawLine(
+                        Color.Yellow,
+                        Offset(size.width / 1.5f, 0f),
+                        Offset(size.width / 1.5f, size.height * borderAnim.value),
+                        10f
+                    )
+                }
         ) {
             Row(
                 modifier = Modifier
