@@ -150,7 +150,7 @@ private fun DrawCross() {
             animationSpec = tween(durationMillis = 300, easing = LinearEasing)
         )
     }
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    Canvas(modifier = Modifier.fillMaxSize().padding(8.dp)) {
         drawLine(
             color = Color.Green,
             start = Offset(0f, 0f),
