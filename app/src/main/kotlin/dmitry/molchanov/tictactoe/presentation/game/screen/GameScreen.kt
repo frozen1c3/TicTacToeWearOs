@@ -4,7 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,13 +53,11 @@ fun GameScreen(/*vm: GameViewModel = viewModel()*/) {
         //val gameState = vm.gameState.collectAsState().value
         val gameSnap = remember { SnapshotStateMap<CellType, PlayerType>() }
         var currentPlayer by remember { mutableStateOf(CROSS) }
-        println("1488 currentPlayer = $currentPlayer")
         fun changePlayer() {
             currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
         }
 
         fun onCellClick(cellType: CellType) {
-            println("1488 SET currentPlayer = $currentPlayer")
             gameSnap[cellType] = currentPlayer
             changePlayer()
         }
@@ -102,17 +99,10 @@ fun GameScreen(/*vm: GameViewModel = viewModel()*/) {
 
 @Composable
 private fun RowScope.GameCell(playerType: PlayerType?, onClick: () -> Unit) {
-    println("1488 playerType = $playerType")
-    val color = when (playerType) {
-        CROSS -> Color(0xffffeb46)
-        ZERO -> Color(0xff91a4fc)
-        null -> Color(0xffffff)
-    }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .weight(CELL_WEIGHT)
-            .background(color)
             .clickable { onClick() }
     ) {
         when (playerType) {
@@ -135,7 +125,7 @@ private fun DrawCircle() {
     }
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawArc(
-            color = Color.Black,
+            color = Color.Red,
             startAngle = 0f,
             sweepAngle = 360f * animateFloat.value,
             useCenter = false,
@@ -162,13 +152,13 @@ private fun DrawCross() {
     }
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawLine(
-            color = Color.Black,
+            color = Color.Green,
             start = Offset(0f, 0f),
             end = Offset(animVal.value * size.width, animVal.value * size.height),
             strokeWidth = 10f
         )
         drawLine(
-            color = Color.Black,
+            color = Color.Green,
             start = Offset(size.width, 0f),
             end = Offset(size.width - (animVal2.value * size.width), animVal2.value * size.height),
             strokeWidth = 10f
