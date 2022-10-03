@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ ci ]
+    branches: [ master ]
   pull_request:
-    branches: [ ci ]
+    branches: [ master ]
 
   workflow_dispatch:
 
@@ -24,7 +24,7 @@ jobs:
       - name: Assemble
         run: ./gradlew :app:assembleRelease
 
-      - name: deploy apk
+      - name: Deploy apk
         uses: actions/upload-artifact@v3
         with:
           name: ticTacToeWear
