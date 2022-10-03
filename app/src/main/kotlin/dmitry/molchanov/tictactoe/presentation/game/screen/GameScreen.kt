@@ -1,10 +1,12 @@
 package dmitry.molchanov.tictactoe.presentation.game.screen
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,10 +27,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.material.MaterialTheme
 import dmitry.molchanov.tictactoe.presentation.game.getWinnerCells
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.BOTTOM
@@ -75,35 +79,13 @@ fun GameScreen() {
         LaunchedEffect(borderAnim) {
             borderAnim.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
         }
+        val borderColor = MaterialTheme.colors.primary
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .drawBehind {
-                    drawLine(
-                        Color.Yellow,
-                        Offset(0f, size.height / 3),
-                        Offset(size.width * borderAnim.value, size.height / 3),
-                        10f
-                    )
-                    drawLine(
-                        Color.Yellow,
-                        Offset(0f, size.height / 1.5f),
-                        Offset(size.width * borderAnim.value, size.height / 1.5f),
-                        10f
-                    )
-                    drawLine(
-                        Color.Yellow,
-                        Offset(size.width / 3, 0f),
-                        Offset(size.width / 3, size.height * borderAnim.value),
-                        10f
-                    )
-                    drawLine(
-                        Color.Yellow,
-                        Offset(size.width / 1.5f, 0f),
-                        Offset(size.width / 1.5f, size.height * borderAnim.value),
-                        10f
-                    )
+                    DrawFiled(size, borderColor, borderAnim)
                 }
         ) {
             Row(
@@ -135,18 +117,51 @@ fun GameScreen() {
             }
         }
         winnerWithCells?.let {
-            val firstCell = it.second.first()
-            val lastCell = it.second.last()
+            val winner = it.first
+            val firstCell = it.second.firstOrNull() ?: return@let
+            val lastCell = it.second.lastOrNull() ?: return@let
             DrawGameOverLine(
                 startOffset = positioningState.value[firstCell] ?: error("Start offset is null"),
-                endOffset = positioningState.value[lastCell] ?: error("End offset is null")
+                endOffset = positioningState.value[lastCell] ?: error("End offset is null"),
+                color = if (winner == ZERO) MaterialTheme.colors.secondary else MaterialTheme.colors.secondaryVariant,
             )
         }
     }
 }
 
+fun DrawScope.DrawFiled(
+    size: Size,
+    color: Color,
+    borderAnim: Animatable<Float, AnimationVector1D>
+) {
+    drawLine(
+        color,
+        Offset(0f, size.height / 3),
+        Offset(size.width * borderAnim.value, size.height / 3),
+        10f
+    )
+    drawLine(
+        color,
+        Offset(0f, size.height / 1.5f),
+        Offset(size.width * borderAnim.value, size.height / 1.5f),
+        10f
+    )
+    drawLine(
+        color,
+        Offset(size.width / 3, 0f),
+        Offset(size.width / 3, size.height * borderAnim.value),
+        10f
+    )
+    drawLine(
+        color,
+        Offset(size.width / 1.5f, 0f),
+        Offset(size.width / 1.5f, size.height * borderAnim.value),
+        10f
+    )
+}
+
 @Composable
-private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset) {
+private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset, color: Color) {
     val animVal = remember { Animatable(0f) }
     val xDifference = remember {
         if (startOffset.x < endOffset.x) endOffset.x - startOffset.x
@@ -161,7 +176,7 @@ private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset) {
     }
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawLine(
-            color = Color.Blue,
+            color = color,
             start = startOffset,
             end = Offset(
                 x = startOffset.x + animVal.value * xDifference,
@@ -183,7 +198,9 @@ private fun RowScope.GameCell(
         modifier = Modifier
             .fillMaxSize()
             .weight(CELL_WEIGHT)
-            .clickable { onClick(cellType) }
+            .clickable(indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = { onClick(cellType) })
             .onGloballyPositioned {
                 val size = it.size
                 val position = it.positionInRoot()
@@ -208,9 +225,10 @@ private fun DrawCircle() {
     LaunchedEffect(animateFloat) {
         animateFloat.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
+    val color = MaterialTheme.colors.secondaryVariant
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawArc(
-            color = Color.Red,
+            color = color,
             startAngle = 0f,
             sweepAngle = 360f * animateFloat.value,
             useCenter = false,
@@ -229,19 +247,20 @@ private fun DrawCross() {
         animVal.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
         animVal2.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
+    val color = MaterialTheme.colors.secondary
     Canvas(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
         drawLine(
-            color = Color.Green,
+            color = color,
             start = Offset(0f, 0f),
             end = Offset(animVal.value * size.width, animVal.value * size.height),
             strokeWidth = 10f
         )
         drawLine(
-            color = Color.Green,
+            color = color,
             start = Offset(size.width, 0f),
             end = Offset(size.width - (animVal2.value * size.width), animVal2.value * size.height),
             strokeWidth = 10f
