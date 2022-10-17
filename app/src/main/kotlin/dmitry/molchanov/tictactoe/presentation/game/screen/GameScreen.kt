@@ -68,11 +68,11 @@ fun GameScreen() {
             }
             if (gameSnap[cellType] == null) {
                 gameSnap[cellType] = currentPlayer
+                currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
             }
             getWinnerCells(gameSnap)?.let { winner ->
                 winnerWithCells = winner
             }
-            currentPlayer = if (currentPlayer == CROSS) ZERO else CROSS
         }
 
         val borderAnim = remember { Animatable(0f) }
@@ -85,7 +85,7 @@ fun GameScreen() {
                 .fillMaxSize()
                 .padding(16.dp)
                 .drawBehind {
-                    DrawFiled(size, borderColor, borderAnim)
+                    drawFiled(size, borderColor, borderAnim)
                 }
         ) {
             Row(
@@ -129,7 +129,7 @@ fun GameScreen() {
     }
 }
 
-fun DrawScope.DrawFiled(
+private fun DrawScope.drawFiled(
     size: Size,
     color: Color,
     borderAnim: Animatable<Float, AnimationVector1D>
