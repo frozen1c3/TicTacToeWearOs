@@ -31,8 +31,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.MaterialTheme
+import dmitry.molchanov.tictactoe.R
 import dmitry.molchanov.tictactoe.presentation.game.getWinnerCells
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType
 import dmitry.molchanov.tictactoe.presentation.game.model.CellType.BOTTOM
@@ -50,6 +52,7 @@ import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.ZERO
 import dmitry.molchanov.tictactoe.presentation.theme.TicTacToeTheme
 
 private const val CELL_WEIGHT = 0.3F
+private const val CELL_SIZE = 9
 
 @Composable
 fun GameScreen() {
@@ -61,7 +64,7 @@ fun GameScreen() {
         var winnerWithCells by remember { mutableStateOf<Pair<PlayerType, List<CellType>>?>(null) }
 
         fun onCellClick(cellType: CellType) {
-            if (winnerWithCells != null || gameSnap.size == 9) {
+            if (winnerWithCells != null || gameSnap.size == CELL_SIZE) {
                 winnerWithCells = null
                 gameSnap.clear()
                 return
@@ -80,12 +83,18 @@ fun GameScreen() {
             borderAnim.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
         }
         val borderColor = MaterialTheme.colors.primary
+        val filedWidth = dimensionResource(id = R.dimen.field_width).value
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .drawBehind {
-                    drawFiled(size, borderColor, borderAnim)
+                    drawFiled(
+                        size = size,
+                        color = borderColor,
+                        borderAnim = borderAnim,
+                        strokeWidth = filedWidth
+                    )
                 }
         ) {
             Row(
@@ -132,31 +141,32 @@ fun GameScreen() {
 private fun DrawScope.drawFiled(
     size: Size,
     color: Color,
-    borderAnim: Animatable<Float, AnimationVector1D>
+    borderAnim: Animatable<Float, AnimationVector1D>,
+    strokeWidth: Float
 ) {
     drawLine(
         color,
         Offset(0f, size.height / 3),
         Offset(size.width * borderAnim.value, size.height / 3),
-        10f
+        strokeWidth
     )
     drawLine(
         color,
         Offset(0f, size.height / 1.5f),
         Offset(size.width * borderAnim.value, size.height / 1.5f),
-        10f
+        strokeWidth
     )
     drawLine(
         color,
         Offset(size.width / 3, 0f),
         Offset(size.width / 3, size.height * borderAnim.value),
-        10f
+        strokeWidth
     )
     drawLine(
         color,
         Offset(size.width / 1.5f, 0f),
         Offset(size.width / 1.5f, size.height * borderAnim.value),
-        10f
+        strokeWidth
     )
 }
 
@@ -174,6 +184,7 @@ private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset, color: Colo
     LaunchedEffect(animVal) {
         animVal.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
+    val figureWidth = dimensionResource(id = R.dimen.game_over_line).value
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawLine(
             color = color,
@@ -182,7 +193,7 @@ private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset, color: Colo
                 x = startOffset.x + animVal.value * xDifference,
                 y = startOffset.y + yDifference * animVal.value
             ),
-            strokeWidth = 20f
+            strokeWidth = figureWidth
         )
     }
 }
@@ -220,12 +231,13 @@ private fun RowScope.GameCell(
 
 @Composable
 private fun DrawCircle() {
-    val radius = 45f
+    val color = MaterialTheme.colors.secondaryVariant
     val animateFloat = remember { Animatable(0f) }
+    val radius = dimensionResource(id = R.dimen.circle_radius).value
+    val figureWidth = dimensionResource(id = R.dimen.figure_width).value
     LaunchedEffect(animateFloat) {
         animateFloat.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
-    val color = MaterialTheme.colors.secondaryVariant
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawArc(
             color = color,
@@ -234,7 +246,7 @@ private fun DrawCircle() {
             useCenter = false,
             topLeft = Offset(size.width / 6, size.height / 6),
             size = Size(radius * 2, radius * 2),
-            style = Stroke(10.0f)
+            style = Stroke(figureWidth)
         )
     }
 }
@@ -248,22 +260,23 @@ private fun DrawCross() {
         animVal2.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
     val color = MaterialTheme.colors.secondary
+    val figureWidth = dimensionResource(id = R.dimen.figure_width).value
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp)
+            .padding(dimensionResource(id = R.dimen.cross_padding))
     ) {
         drawLine(
             color = color,
             start = Offset(0f, 0f),
             end = Offset(animVal.value * size.width, animVal.value * size.height),
-            strokeWidth = 10f
+            strokeWidth = figureWidth
         )
         drawLine(
             color = color,
             start = Offset(size.width, 0f),
             end = Offset(size.width - (animVal2.value * size.width), animVal2.value * size.height),
-            strokeWidth = 10f
+            strokeWidth = figureWidth
         )
     }
 }
