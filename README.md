@@ -19,5 +19,5 @@
 </p>
 
 <div align="center">
-  <img src="img/Screenshot.png">
+  <img src="img/screenshot.png">
 </div>

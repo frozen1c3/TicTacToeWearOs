@@ -8,12 +8,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -50,8 +50,8 @@ import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.CROSS
 import dmitry.molchanov.tictactoe.presentation.game.model.PlayerType.ZERO
 import dmitry.molchanov.tictactoe.presentation.theme.TicTacToeTheme
+import java.lang.Float.min
 
-private const val CELL_WEIGHT = 0.3F
 private const val CELL_SIZE = 9
 
 @Composable
@@ -84,47 +84,33 @@ fun GameScreen() {
         }
         val borderColor = MaterialTheme.colors.primary
         val filedWidth = dimensionResource(id = R.dimen.field_width).value
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .drawBehind {
-                    drawFiled(
-                        size = size,
-                        color = borderColor,
-                        borderAnim = borderAnim,
-                        strokeWidth = filedWidth
-                    )
-                }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(CELL_WEIGHT)
-            ) {
-                GameCell(LEFT_TOP, gameSnap[LEFT_TOP], positioningState, ::onCellClick)
-                GameCell(TOP, gameSnap[TOP], positioningState, ::onCellClick)
-                GameCell(RIGHT_TOP, gameSnap[RIGHT_TOP], positioningState, ::onCellClick)
+        LazyVerticalGrid(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .drawBehind {
+                drawFiled(
+                    size = size,
+                    color = borderColor,
+                    borderAnim = borderAnim,
+                    strokeWidth = filedWidth
+                )
+            }, columns = GridCells.Fixed(count = 3), content = {
+            items(
+                arrayOf(
+                    LEFT_TOP,
+                    TOP,
+                    RIGHT_TOP,
+                    LEFT_CENTER,
+                    CENTER,
+                    RIGHT_CENTER,
+                    LEFT_BOTTOM,
+                    BOTTOM,
+                    RIGHT_BOTTOM,
+                )
+            ) { cellType ->
+                GameCell(cellType, gameSnap[cellType], positioningState, ::onCellClick)
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(CELL_WEIGHT)
-            ) {
-                GameCell(LEFT_CENTER, gameSnap[LEFT_CENTER], positioningState, ::onCellClick)
-                GameCell(CENTER, gameSnap[CENTER], positioningState, ::onCellClick)
-                GameCell(RIGHT_CENTER, gameSnap[RIGHT_CENTER], positioningState, ::onCellClick)
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(CELL_WEIGHT)
-            ) {
-                GameCell(LEFT_BOTTOM, gameSnap[LEFT_BOTTOM], positioningState, ::onCellClick)
-                GameCell(BOTTOM, gameSnap[BOTTOM], positioningState, ::onCellClick)
-                GameCell(RIGHT_BOTTOM, gameSnap[RIGHT_BOTTOM], positioningState, ::onCellClick)
-            }
-        }
+        })
         winnerWithCells?.let {
             val winner = it.first
             val firstCell = it.second.firstOrNull() ?: return@let
@@ -199,7 +185,7 @@ private fun DrawGameOverLine(startOffset: Offset, endOffset: Offset, color: Colo
 }
 
 @Composable
-private fun RowScope.GameCell(
+fun GameCell(
     cellType: CellType,
     playerType: PlayerType?,
     positioningState: State<HashMap<CellType, Offset>>,
@@ -208,10 +194,12 @@ private fun RowScope.GameCell(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .weight(CELL_WEIGHT)
+            .aspectRatio(1f)
             .clickable(indication = null,
                 interactionSource = remember { MutableInteractionSource() },
-                onClick = { onClick(cellType) })
+                onClick = {
+                    onClick(cellType)
+                })
             .onGloballyPositioned {
                 val size = it.size
                 val position = it.positionInRoot()
@@ -233,20 +221,22 @@ private fun RowScope.GameCell(
 private fun DrawCircle() {
     val color = MaterialTheme.colors.secondaryVariant
     val animateFloat = remember { Animatable(0f) }
-    val radius = dimensionResource(id = R.dimen.circle_radius).value
+    val circleMargin = dimensionResource(id = R.dimen.circle_margin).value
     val figureWidth = dimensionResource(id = R.dimen.figure_width).value
     LaunchedEffect(animateFloat) {
         animateFloat.animateTo(targetValue = 1f, animationSpec = tween(easing = LinearEasing))
     }
     Canvas(modifier = Modifier.fillMaxSize()) {
+        val sideSize = min(size.width, size.height)
+        val diameter = sideSize - circleMargin
         drawArc(
             color = color,
             startAngle = 0f,
             sweepAngle = 360f * animateFloat.value,
             useCenter = false,
-            topLeft = Offset(size.width / 6, size.height / 6),
-            size = Size(radius * 2, radius * 2),
-            style = Stroke(figureWidth)
+            topLeft = Offset((size.width - diameter) / 2, (size.width - diameter) / 2),
+            size = Size(diameter, diameter),
+            style = Stroke(figureWidth),
         )
     }
 }
