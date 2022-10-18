@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -84,33 +85,37 @@ fun GameScreen() {
         }
         val borderColor = MaterialTheme.colors.primary
         val filedWidth = dimensionResource(id = R.dimen.field_width).value
-        LazyVerticalGrid(modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .drawBehind {
-                drawFiled(
-                    size = size,
-                    color = borderColor,
-                    borderAnim = borderAnim,
-                    strokeWidth = filedWidth
-                )
-            }, columns = GridCells.Fixed(count = 3), content = {
-            items(
-                arrayOf(
-                    LEFT_TOP,
-                    TOP,
-                    RIGHT_TOP,
-                    LEFT_CENTER,
-                    CENTER,
-                    RIGHT_CENTER,
-                    LEFT_BOTTOM,
-                    BOTTOM,
-                    RIGHT_BOTTOM,
-                )
-            ) { cellType ->
-                GameCell(cellType, gameSnap[cellType], positioningState, ::onCellClick)
-            }
-        })
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyVerticalGrid(modifier = Modifier
+                //.fillMaxSize()
+                //.background()
+                .align(Alignment.Center)
+                .padding(16.dp)
+                .drawBehind {
+                    drawFiled(
+                        size = size,
+                        color = borderColor,
+                        borderAnim = borderAnim,
+                        strokeWidth = filedWidth
+                    )
+                }, columns = GridCells.Fixed(count = 3), content = {
+                items(
+                    arrayOf(
+                        LEFT_TOP,
+                        TOP,
+                        RIGHT_TOP,
+                        LEFT_CENTER,
+                        CENTER,
+                        RIGHT_CENTER,
+                        LEFT_BOTTOM,
+                        BOTTOM,
+                        RIGHT_BOTTOM,
+                    )
+                ) { cellType ->
+                    GameCell(cellType, gameSnap[cellType], positioningState, ::onCellClick)
+                }
+            })
+        }
         winnerWithCells?.let {
             val winner = it.first
             val firstCell = it.second.firstOrNull() ?: return@let
