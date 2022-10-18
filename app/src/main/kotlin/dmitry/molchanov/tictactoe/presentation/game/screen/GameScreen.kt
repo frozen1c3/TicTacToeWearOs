@@ -33,7 +33,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.MaterialTheme
 import dmitry.molchanov.tictactoe.R
 import dmitry.molchanov.tictactoe.presentation.game.getWinnerCells
@@ -87,10 +86,8 @@ fun GameScreen() {
         val filedWidth = dimensionResource(id = R.dimen.field_width).value
         Box(modifier = Modifier.fillMaxSize()) {
             LazyVerticalGrid(modifier = Modifier
-                //.fillMaxSize()
-                //.background()
                 .align(Alignment.Center)
-                .padding(16.dp)
+                .padding(dimensionResource(id = R.dimen.root_margin))
                 .drawBehind {
                     drawFiled(
                         size = size,

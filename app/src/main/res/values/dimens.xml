@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="root_margin">0dp</dimen>
     <dimen name="field_width">10dp</dimen>
     <dimen name="figure_width">10dp</dimen>
     <dimen name="game_over_line">20dp</dimen>
