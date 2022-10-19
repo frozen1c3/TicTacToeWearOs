@@ -6,11 +6,14 @@
   <a href="https://developer.android.com/jetpack/androidx/releases/wear-compose">
     <img src="https://img.shields.io/badge/Wear%20Compose-1.1.0--alpha06-yellow)">
   </a>
-  <a href="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/build.yml">
-    <img src="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/main.yml/badge.svg">
+  <a href="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/lint.yml" target="_blank">
+    <img src="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/lint.yml/badge.svg">
   </a>
   <a href="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/test.yml" target="_blank">
     <img src="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/test.yml/badge.svg">
+  </a>
+  <a href="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/build.yml">
+    <img src="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/main.yml/badge.svg">
   </a>
 </p>
 

@@ -21,6 +21,6 @@ jobs:
       - name: Deploy apk
         uses: actions/upload-artifact@v3
         with:
-          name: ticTacToeWear
+          name: TicTacToeWear
           path: app/build/outputs/apk/release
           retention-days: 2
