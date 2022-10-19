@@ -13,7 +13,7 @@
     <img src="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/test.yml/badge.svg">
   </a>
   <a href="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/build.yml">
-    <img src="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/main.yml/badge.svg">
+    <img src="https://github.com/MolchanovDmitry/TicTacToeWearOs/actions/workflows/build.yml/badge.svg">
   </a>
 </p>
 
