@@ -10,15 +10,14 @@ on:
     inputs: { }
 
 jobs:
-  build:
-    on-success:
-      if: ${{ github.event.workflow_run.conclusion == 'success' }}
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v2
+  test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
 
-        - name: Change wrapper permission
-          run: chmod +x ./gradlew
+      - name: Change wrapper permission
+        run: chmod +x ./gradlew
 
-        - name: Run unit test
-          run: ./gradlew :app:testReleaseUnitTest
+      - name: Run unit test
+        run: ./gradlew :app:testReleaseUnitTest
