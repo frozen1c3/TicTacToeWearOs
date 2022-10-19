@@ -43,6 +43,11 @@ android {
                 '-Xno-param-assertions'
         ]
     }
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "tictactoe_${variant.buildType.name}_${defaultConfig.versionName}.apk"
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
