@@ -1,14 +1,10 @@
-name: Test
+name: Lint
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  workflow_run:
-    workflows: [ "Lint" ]
-    types:
-      - completed
 
   workflow_dispatch:
 
@@ -23,4 +19,4 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run unit test
-        run: ./gradlew :app:testReleaseUnitTest
+        run: ./gradlew ktlintCheck
