@@ -1,26 +1,24 @@
 name: Test
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_run:
-    workflows: [ Lint ]
-    types:
-      - completed
+    workflows: ["Lint"]
+    branches: [ master ]
+    types: [completed]
 
   workflow_dispatch:
+    inputs: { }
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    on-success:
+      if: ${{ github.event.workflow_run.conclusion == 'success' }}
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
 
-    steps:
-      - uses: actions/checkout@v2
+        - name: Change wrapper permission
+          run: chmod +x ./gradlew
 
-      - name: Change wrapper permission
-        run: chmod +x ./gradlew
-
-      - name: Run unit test
-        run: ./gradlew :app:testReleaseUnitTest
+        - name: Run unit test
+          run: ./gradlew :app:testReleaseUnitTest
