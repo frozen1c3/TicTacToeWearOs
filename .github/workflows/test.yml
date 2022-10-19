@@ -2,9 +2,9 @@ name: Test
 
 on:
   workflow_run:
-    workflows: ["Lint"]
+    workflows: [ Lint ]
     branches: [ master ]
-    types: [completed]
+    types: [ completed ]
 
   workflow_dispatch:
     inputs: { }
@@ -15,9 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Change wrapper permission
-        run: chmod +x ./gradlew
 
       - name: Run unit test
         run: ./gradlew :app:testReleaseUnitTest
