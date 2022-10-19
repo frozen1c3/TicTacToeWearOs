@@ -7,7 +7,6 @@ on:
     types: [ completed ]
 
   workflow_dispatch:
-    inputs: { }
 
 jobs:
   test:
